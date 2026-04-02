@@ -1,0 +1,262 @@
+================================================================
+   UNIT TESTING DOCUMENTATION
+   Project: AI-Enabled Visa Status Prediction and Processing Time Estimator
+   Internship: Infosys Springboard
+   Author: Anant Ashish
+================================================================
+
+----------------------------------------------------------------
+1. OVERVIEW
+----------------------------------------------------------------
+This document contains unit test cases written to validate each
+component of the Visa Status Prediction ML pipeline and Streamlit app.
+
+Testing Framework : Manual + Python assertions
+Coverage Areas    : Data preprocessing, Feature engineering,
+                    Model loading, Prediction output, App inputs
+
+----------------------------------------------------------------
+2. TEST CASES — MODULE 1: DATA PREPROCESSING (preprocess_visa.py)
+----------------------------------------------------------------
+
+TC-01: Dataset Loading
+----------------------
+Test ID       : TC-01
+Module        : Data Collection
+Function      : pd.read_csv()
+Description   : Verify dataset loads correctly with expected shape
+Input         : data/visa_dataset.csv
+Expected      : DataFrame with 857,216 rows and 13 columns
+Actual        : DataFrame with 857,216 rows and 13 columns
+Status        : PASS ✅
+
+TC-02: Missing Value Handling — PREVAILING_WAGE
+-----------------------------------------------
+Test ID       : TC-02
+Module        : Preprocessing
+Function      : fillna(median)
+Description   : Null values in PREVAILING_WAGE filled with median
+Input         : Column with null values
+Expected      : Zero null values after fillna
+Actual        : Zero null values confirmed
+Status        : PASS ✅
+
+TC-03: Missing Value Handling — FULL_TIME_POSITION
+--------------------------------------------------
+Test ID       : TC-03
+Module        : Preprocessing
+Function      : fillna('Y')
+Description   : Null values in FULL_TIME_POSITION filled with 'Y'
+Input         : Column with null values
+Expected      : No null values, all filled with 'Y'
+Actual        : No null values confirmed
+Status        : PASS ✅
+
+TC-04: Missing Value Handling — Categorical Columns
+---------------------------------------------------
+Test ID       : TC-04
+Module        : Preprocessing
+Function      : fillna('UNKNOWN')
+Description   : Null values in CASE_STATUS, EMPLOYER_NAME, JOB_TITLE, WORKSITE filled with UNKNOWN
+Input         : Columns with null values
+Expected      : Zero nulls in all categorical columns
+Actual        : Zero nulls confirmed
+Status        : PASS ✅
+
+TC-05: Column Selection
+-----------------------
+Test ID       : TC-05
+Module        : Preprocessing
+Function      : df[cols_needed]
+Description   : Only required columns are kept after selection
+Input         : Raw dataset with 13 columns
+Expected      : DataFrame with 7 columns
+Actual        : DataFrame with 7 columns
+Status        : PASS ✅
+
+----------------------------------------------------------------
+3. TEST CASES — MODULE 2: FEATURE ENGINEERING (milestone2.py)
+----------------------------------------------------------------
+
+TC-06: STATE Extraction from WORKSITE
+--------------------------------------
+Test ID       : TC-06
+Module        : Feature Engineering
+Function      : lambda x: str(x).split(',')[-1].strip()[:2]
+Description   : STATE correctly extracted from WORKSITE string
+Input         : 'New York, NY'
+Expected      : 'NY'
+Actual        : 'NY'
+Status        : PASS ✅
+
+TC-07: WORKSITE Column Dropped After Extraction
+-----------------------------------------------
+Test ID       : TC-07
+Module        : Feature Engineering
+Function      : df.drop('WORKSITE')
+Description   : WORKSITE column removed after STATE extraction
+Input         : DataFrame with WORKSITE column
+Expected      : WORKSITE not present in columns
+Actual        : WORKSITE not in columns
+Status        : PASS ✅
+
+TC-08: WAGE_CATEGORY Binning
+-----------------------------
+Test ID       : TC-08
+Module        : Feature Engineering
+Function      : pd.cut()
+Description   : Wages correctly binned into categories
+Input         : PREVAILING_WAGE = 75000
+Expected      : WAGE_CATEGORY = 'Medium'
+Actual        : 'Medium'
+Status        : PASS ✅
+
+TC-09: FULL_TIME_BINARY Encoding
+---------------------------------
+Test ID       : TC-09
+Module        : Feature Engineering
+Function      : (df['FULL_TIME_POSITION'] == 'Y').astype(int)
+Description   : Full time flag correctly converted to binary
+Input         : 'Y'
+Expected      : 1
+Actual        : 1
+Status        : PASS ✅
+
+TC-10: Frequency Encoding — EMPLOYER_NAME
+------------------------------------------
+Test ID       : TC-10
+Module        : Feature Engineering
+Function      : value_counts(normalize=True)
+Description   : Employer name replaced with frequency value
+Input         : Column with employer names
+Expected      : Float values between 0 and 1
+Actual        : Float values between 0 and 1 confirmed
+Status        : PASS ✅
+
+----------------------------------------------------------------
+4. TEST CASES — MODULE 3: MODEL TRAINING (train.py)
+----------------------------------------------------------------
+
+TC-11: Train/Test Split
+-----------------------
+Test ID       : TC-11
+Module        : Model Training
+Function      : train_test_split()
+Description   : Dataset correctly split into 80% train and 20% test
+Input         : 857,214 samples
+Expected      : Train=685,771 | Test=171,443
+Actual        : Train=685,771 | Test=171,443
+Status        : PASS ✅
+
+TC-12: Model Training Completion
+---------------------------------
+Test ID       : TC-12
+Module        : Model Training
+Function      : XGBRegressor.fit()
+Description   : XGBoost model trains without error for 300 estimators
+Input         : X_train, y_train
+Expected      : Model object fitted successfully
+Actual        : Model fitted, RMSE converged around 5.77
+Status        : PASS ✅
+
+TC-13: Model Evaluation Metrics
+---------------------------------
+Test ID       : TC-13
+Module        : Model Evaluation
+Function      : mean_absolute_error, mean_squared_error, r2_score
+Description   : Model metrics within acceptable range
+Input         : y_test, y_pred
+Expected      : MAE < 10, R² > 0.5
+Actual        : MAE=5.00, RMSE=5.77, R²=0.6267
+Status        : PASS ✅
+
+TC-14: Model Saving
+--------------------
+Test ID       : TC-14
+Module        : Model Persistence
+Function      : joblib.dump()
+Description   : Model saved correctly to disk
+Input         : Trained model + encoders + metadata
+Expected      : visa_model.pkl file created at model/
+Actual        : File created successfully (423 KB)
+Status        : PASS ✅
+
+TC-15: Model Loading
+--------------------
+Test ID       : TC-15
+Module        : Model Persistence
+Function      : joblib.load()
+Description   : Saved model loads without error
+Input         : model/visa_model.pkl
+Expected      : Dictionary with keys: model, encoders, feature_columns, metrics
+Actual        : All keys present and accessible
+Status        : PASS ✅
+
+----------------------------------------------------------------
+5. TEST CASES — MODULE 4: STREAMLIT APP (app.py)
+----------------------------------------------------------------
+
+TC-16: Model Load on App Startup
+----------------------------------
+Test ID       : TC-16
+Module        : Streamlit App
+Function      : load_model() with @st.cache_resource
+Description   : Model loads correctly when app starts
+Input         : model/visa_model.pkl
+Expected      : No error on startup
+Actual        : App loads successfully
+Status        : PASS ✅
+
+TC-17: Prediction for Standard Input
+--------------------------------------
+Test ID       : TC-17
+Module        : Prediction Engine
+Function      : model.predict()
+Description   : Valid input produces prediction in expected range
+Input         : CASE_STATUS=CERTIFIED, WAGE=75000, YEAR=2020, STATE=CA
+Expected      : Prediction between 15 and 120 days
+Actual        : Prediction = 44 days (within range)
+Status        : PASS ✅
+
+TC-18: Confidence Interval Calculation
+----------------------------------------
+Test ID       : TC-18
+Module        : Prediction Engine
+Description   : Lower and upper bounds correctly calculated
+Input         : Prediction = 44 days
+Expected      : Lower = 37, Upper = 50 (±15%)
+Actual        : Lower = 37, Upper = 50
+Status        : PASS ✅
+
+TC-19: Gauge Chart Rendering
+------------------------------
+Test ID       : TC-19
+Module        : Visualization
+Function      : plotly go.Indicator
+Description   : Gauge chart renders without error after prediction
+Input         : Prediction value = 44
+Expected      : Chart displayed with correct value
+Actual        : Chart rendered correctly
+Status        : PASS ✅
+
+TC-20: All Three Tabs Load
+---------------------------
+Test ID       : TC-20
+Module        : Streamlit App UI
+Description   : All 3 tabs (Predict, Analytics, Model Info) load without error
+Input         : App startup
+Expected      : All tabs accessible and content renders
+Actual        : All tabs load successfully
+Status        : PASS ✅
+
+----------------------------------------------------------------
+6. TEST SUMMARY
+----------------------------------------------------------------
+Total Test Cases : 20
+Passed           : 20
+Failed           : 0
+Pass Rate        : 100%
+
+================================================================
+END OF UNIT TESTING DOCUMENT
+================================================================

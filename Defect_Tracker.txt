@@ -1,0 +1,244 @@
+================================================================
+   DEFECT TRACKER
+   Project: AI-Enabled Visa Status Prediction and Processing Time Estimator
+   Internship: Infosys Springboard
+   Author: Anant Ashish
+================================================================
+
+----------------------------------------------------------------
+DEFECT SEVERITY LEVELS
+----------------------------------------------------------------
+Critical  — App crashes or data is corrupted
+High      — Major feature broken, no workaround
+Medium    — Feature partially broken, workaround exists
+Low       — Minor issue, cosmetic or non-blocking
+
+----------------------------------------------------------------
+DEFECT STATUS
+----------------------------------------------------------------
+Open      — Not yet fixed
+In Progress — Being worked on
+Resolved  — Fixed and verified
+Closed    — Verified and signed off
+
+================================================================
+DEFECT LOG
+================================================================
+
+----------------------------------------------------------------
+MILESTONE 1 DEFECTS — Data Collection & Preprocessing
+----------------------------------------------------------------
+
+DEF-001
+--------
+ID            : DEF-001
+Title         : FutureWarning on inplace fillna operations
+Module        : preprocess_visa.py
+Severity      : Low
+Status        : Resolved ✅
+Reported On   : Milestone 1
+Description   : Using df[col].fillna(value, inplace=True) triggers
+                FutureWarning in newer pandas versions. Pandas 3.0
+                will no longer support this pattern.
+Steps to Reproduce:
+  1. Run preprocess_visa.py
+  2. Observe FutureWarning messages in terminal
+Root Cause    : Chained assignment via inplace=True on DataFrame slice
+Fix Applied   : Replaced all inplace fillna with:
+                df[col] = df[col].fillna(value)
+Verified By   : Re-ran train.py — no warnings observed
+
+---
+
+DEF-002
+--------
+ID            : DEF-002
+Title         : Original dataset too large to push to GitHub
+Module        : Data / GitHub
+Severity      : Medium
+Status        : Resolved ✅
+Reported On   : Milestone 4 (Deployment)
+Description   : visa_dataset.csv is 142.23 MB which exceeds GitHub's
+                100 MB file size limit. Push was rejected.
+Steps to Reproduce:
+  1. Run git push with data/ folder included
+  2. GitHub rejects with GH001 error
+Root Cause    : Large CSV file committed to git tracking
+Fix Applied   :
+  1. Ran git rm --cached data/visa_dataset.csv
+  2. Added data/ to .gitignore
+  3. Used git filter-branch to remove file from all history
+  4. Force pushed cleaned history
+Verified By   : Push succeeded after history rewrite
+
+---
+
+DEF-003
+--------
+ID            : DEF-003
+Title         : dropna with thresh removed too few rows
+Module        : preprocess_visa.py
+Severity      : Low
+Status        : Resolved ✅
+Reported On   : Milestone 1
+Description   : dropna(thresh=len(df.columns)-2) was not removing
+                rows with many missing values as expected because
+                threshold was calculated before column selection.
+Root Cause    : thresh calculated on full 13-column df, not 7-column subset
+Fix Applied   : Moved dropna call to after column selection step
+Verified By   : Final shape confirmed as 857,214 (2 rows dropped)
+
+----------------------------------------------------------------
+MILESTONE 2 DEFECTS — EDA & Feature Engineering
+----------------------------------------------------------------
+
+DEF-004
+--------
+ID            : DEF-004
+Title         : STATE extraction failed for WORKSITE values without comma
+Module        : milestone2.py
+Severity      : Medium
+Status        : Resolved ✅
+Reported On   : Milestone 2
+Description   : Some WORKSITE entries did not contain a comma
+                (e.g., 'REMOTE', 'N/A'). The lambda split on ','
+                returned the full string instead of a state code,
+                resulting in invalid STATE values.
+Steps to Reproduce:
+  1. Apply lambda to WORKSITE = 'REMOTE'
+  2. Result is 'RE' instead of 'UNKNOWN'
+Root Cause    : No guard clause for entries without comma
+Fix Applied   : Added conditional check:
+                lambda x: str(x).split(',')[-1].strip()[:2].upper()
+                if isinstance(x, str) and ',' in x else 'UNKNOWN'
+Verified By   : Tested with 'REMOTE', 'N/A', None — all return 'UNKNOWN'
+
+---
+
+DEF-005
+--------
+ID            : DEF-005
+Title         : WAGE_CATEGORY returned NaN for wages at bin edges
+Module        : milestone2.py
+Severity      : Low
+Status        : Resolved ✅
+Reported On   : Milestone 2
+Description   : pd.cut() returned NaN for wage values of exactly 0
+                because the lowest bin started at 0 (exclusive by default)
+Root Cause    : pd.cut bins are (left, right] by default — 0 falls outside
+Fix Applied   : Changed lowest bin to -1 to capture zero/near-zero wages
+Verified By   : No NaN values in WAGE_CATEGORY after fix
+
+----------------------------------------------------------------
+MILESTONE 3 DEFECTS — Predictive Modeling
+----------------------------------------------------------------
+
+DEF-006
+--------
+ID            : DEF-006
+Title         : XGBoost RMSE stopped improving after epoch 100
+Module        : train.py
+Severity      : Low
+Status        : Closed ✅
+Reported On   : Milestone 3
+Description   : Validation RMSE plateaued at ~5.77 after 100 estimators.
+                Training beyond 150 did not improve performance.
+Steps to Reproduce:
+  1. Train XGBoost with 300 estimators
+  2. Observe RMSE: 5.82 at [0], 5.77 at [100], 5.77 at [299]
+Root Cause    : Model converged — not a defect, expected behavior
+Resolution    : No fix needed. Could add early_stopping_rounds=20 as
+                optimization in future iterations.
+Status        : Closed (expected behavior)
+
+---
+
+DEF-007
+--------
+ID            : DEF-007
+Title         : LabelEncoder fails on unseen categories at inference time
+Module        : app.py
+Severity      : High
+Status        : Resolved ✅
+Reported On   : Milestone 4
+Description   : If a user selects a STATE or CASE_STATUS value that
+                was not seen during training, LabelEncoder.transform()
+                raises a ValueError.
+Steps to Reproduce:
+  1. Enter a state not in training data
+  2. App crashes with: ValueError: unseen labels
+Root Cause    : LabelEncoder has no built-in handling for unseen labels
+Fix Applied   : Added conditional check before encoding:
+                encoded = le.transform([val])[0]
+                  if val in le.classes_ else 0
+Verified By   : Tested with unknown state — app returns default value
+
+----------------------------------------------------------------
+MILESTONE 4 DEFECTS — Web App & Deployment
+----------------------------------------------------------------
+
+DEF-008
+--------
+ID            : DEF-008
+Title         : git push failed — src refspec main does not match any
+Module        : GitHub / Deployment
+Severity      : Medium
+Status        : Resolved ✅
+Reported On   : Milestone 4
+Description   : Git push to main branch failed because local branch
+                was named 'master' not 'main'
+Root Cause    : Default git branch name is 'master', GitHub expects 'main'
+Fix Applied   : Ran git branch -M master main to rename branch
+Verified By   : Push succeeded after rename
+
+---
+
+DEF-009
+--------
+ID            : DEF-009
+Title         : Streamlit app crashes if visa_model.pkl not found
+Module        : app.py
+Severity      : High
+Status        : Resolved ✅
+Reported On   : Milestone 4
+Description   : If model/visa_model.pkl is missing (e.g., on fresh clone
+                without running train.py), app throws FileNotFoundError
+                on startup.
+Root Cause    : No error handling around joblib.load()
+Fix Applied   : Added try/except with informative error message:
+                st.error("Model not found. Please run model/train.py first.")
+Verified By   : Tested on fresh clone — graceful error shown
+
+---
+
+DEF-010
+--------
+ID            : DEF-010
+Title         : Git identity unknown error during first commit
+Module        : GitHub / Deployment
+Severity      : Low
+Status        : Resolved ✅
+Reported On   : Milestone 4
+Description   : git commit failed with "Author identity unknown" error
+Root Cause    : Git user.email and user.name not configured globally
+Fix Applied   : Ran:
+                git config --global user.email "email@example.com"
+                git config --global user.name "itsAnantAshish"
+Verified By   : Commit succeeded after configuration
+
+================================================================
+DEFECT SUMMARY
+================================================================
+Total Defects Logged  : 10
+Critical              : 0
+High                  : 2
+Medium                : 3
+Low                   : 5
+
+Resolved              : 10
+Open                  : 0
+Resolution Rate       : 100%
+
+================================================================
+END OF DEFECT TRACKER
+================================================================

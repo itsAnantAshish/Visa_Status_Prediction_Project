@@ -1,0 +1,170 @@
+================================================================
+   AGILE DOCUMENTATION
+   Project: AI-Enabled Visa Status Prediction and Processing Time Estimator
+   Internship: Infosys Springboard
+   Author: Anant Ashish
+================================================================
+
+----------------------------------------------------------------
+1. PROJECT OVERVIEW
+----------------------------------------------------------------
+Project Title   : AI-Enabled Visa Status Prediction and Processing Time Estimator
+Methodology     : Agile (Scrum)
+Total Duration  : 8 Weeks (4 Sprints x 2 Weeks)
+Team Size       : 1 (Solo)
+Tools Used      : Python, XGBoost, Streamlit, GitHub
+
+----------------------------------------------------------------
+2. PRODUCT BACKLOG
+----------------------------------------------------------------
+ID    | User Story                                                        | Priority | Story Points
+------|-------------------------------------------------------------------|----------|-------------
+US-01 | As a user, I want the system to collect & clean visa data         | High     | 5
+US-02 | As a user, I want missing values handled automatically            | High     | 3
+US-03 | As a user, I want to see EDA visualizations of the dataset        | Medium   | 4
+US-04 | As a user, I want features engineered for better predictions      | High     | 4
+US-05 | As a user, I want a trained ML model that predicts processing time | High     | 8
+US-06 | As a user, I want model evaluation metrics (MAE, RMSE, R²)       | Medium   | 3
+US-07 | As a user, I want a web form to input application details         | High     | 6
+US-08 | As a user, I want to see a prediction with a confidence range     | High     | 5
+US-09 | As a user, I want charts showing historical visa trends           | Medium   | 4
+US-10 | As a user, I want the app deployed online and accessible          | High     | 5
+
+----------------------------------------------------------------
+3. SPRINT PLAN
+----------------------------------------------------------------
+
+SPRINT 1 (Weeks 1-2): Data Collection & Preprocessing
+------------------------------------------------------
+Goal     : Build a clean, structured dataset ready for modeling
+Stories  : US-01, US-02
+
+Tasks:
+  - Download H1B visa dataset from Kaggle (857,216 records)
+  - Identify and drop irrelevant columns
+  - Handle missing values (median for PREVAILING_WAGE, mode for YEAR)
+  - Fill categorical nulls with 'UNKNOWN'
+  - Generate synthetic target variable: processing_time_days (range: 15-120)
+  - Save cleaned dataset to CSV
+
+Definition of Done:
+  - preprocess_visa.py runs without errors
+  - Cleaned dataset has no null values
+  - Target variable generated and validated
+
+Sprint 1 Status: COMPLETED ✅
+
+---
+
+SPRINT 2 (Weeks 3-4): Exploratory Data Analysis & Feature Engineering
+----------------------------------------------------------------------
+Goal     : Derive insights and prepare features for modeling
+Stories  : US-03, US-04
+
+Tasks:
+  - Visualize processing time distribution (histogram)
+  - Analyze wage vs processing time (scatter plot)
+  - Boxplot of processing time by year
+  - Extract STATE from WORKSITE column (dimensionality reduction)
+  - Create WAGE_CATEGORY feature (binned: Very Low to Very High)
+  - Create FULL_TIME_BINARY feature
+  - Apply frequency encoding for EMPLOYER_NAME and JOB_TITLE
+  - Apply LabelEncoder for categorical columns
+
+Definition of Done:
+  - milestone2.py runs without errors
+  - All visualizations saved as screenshots
+  - Final feature set ready for model training
+
+Sprint 2 Status: COMPLETED ✅
+
+---
+
+SPRINT 3 (Weeks 5-6): Predictive Modeling
+------------------------------------------
+Goal     : Train and evaluate XGBoost regression model
+Stories  : US-05, US-06
+
+Tasks:
+  - Set up train/test split (80/20)
+  - Train XGBoost Regressor (300 estimators, max_depth=6, lr=0.05)
+  - Evaluate using MAE, RMSE, R² metrics
+  - Save model and encoders using joblib
+  - Store feature importances alongside model
+
+Results:
+  - MAE  : 5.00 days
+  - RMSE : 5.77 days
+  - R²   : 0.6267
+
+Definition of Done:
+  - Model achieves MAE < 10 days
+  - visa_model.pkl saved successfully
+  - Metrics printed and recorded
+
+Sprint 3 Status: COMPLETED ✅
+
+---
+
+SPRINT 4 (Weeks 7-8): Web App Development & Deployment
+-------------------------------------------------------
+Goal     : Build and deploy a functional Streamlit estimator app
+Stories  : US-07, US-08, US-09, US-10
+
+Tasks:
+  - Build Streamlit app with 3 tabs (Predict, Analytics, Model Info)
+  - Create input form (case status, wage, year, state, job title etc.)
+  - Integrate model for real-time prediction
+  - Add gauge chart for visual output
+  - Add confidence range (±15%)
+  - Add trend charts using Plotly
+  - Add feature importance bar chart
+  - Deploy on Streamlit Cloud
+  - Push all code to GitHub
+
+Definition of Done:
+  - App runs locally without errors
+  - App deployed and publicly accessible via URL
+  - GitHub repo updated with all milestone code
+
+Sprint 4 Status: COMPLETED ✅
+
+----------------------------------------------------------------
+4. SPRINT VELOCITY
+----------------------------------------------------------------
+Sprint | Planned Points | Completed Points | Velocity
+-------|----------------|------------------|----------
+1      | 8              | 8                | 100%
+2      | 8              | 8                | 100%
+3      | 11             | 11               | 100%
+4      | 20             | 20               | 100%
+TOTAL  | 47             | 47               | 100%
+
+----------------------------------------------------------------
+5. TOOLS & TECHNOLOGIES
+----------------------------------------------------------------
+Category        | Tool/Technology
+----------------|---------------------------
+Language        | Python 3.x
+ML Library      | XGBoost, Scikit-learn
+Data Processing | Pandas, NumPy
+Visualization   | Plotly, Matplotlib, Seaborn
+Web Framework   | Streamlit
+Model Saving    | Joblib
+Version Control | Git, GitHub
+Deployment      | Streamlit Cloud
+IDE             | VS Code
+
+----------------------------------------------------------------
+6. RISKS & MITIGATIONS
+----------------------------------------------------------------
+Risk                              | Mitigation
+----------------------------------|------------------------------------------
+Dataset too large for GitHub      | Added data/ to .gitignore
+No real processing date in data   | Created realistic synthetic target variable
+High cardinality in employer names| Used frequency encoding
+Model overfitting                 | Used 80/20 split + early stopping in XGBoost
+
+================================================================
+END OF AGILE DOCUMENT
+================================================================
